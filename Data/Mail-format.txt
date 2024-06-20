@@ -1,0 +1,8 @@
+hi this is an test mail
+Email {Email}	
+Name: {Name}	
+Work: {Work}	
+Role: {Role_Of_User}	
+Salary: {Salary}
+
+
