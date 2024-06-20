@@ -1,3 +1,12 @@
+"""
+        Bulk Mailer System 
+
+    - to send bulk of mails from excel with an format of mail with its concurrent values
+
+-by Rishi Aravaind
+
+"""
+
 # Module Imports
 import json
 import smtplib
