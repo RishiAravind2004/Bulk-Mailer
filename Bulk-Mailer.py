@@ -1,5 +1,4 @@
 # Module Imports
-
 import json
 import smtplib
 import pandas as pd
@@ -7,16 +6,26 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, simpledialog
 from Mailing import Send_Mails
 
+# Define global variables
+current_file_path = ""
+selected_file_label = None
+df = None
+
+
 """
 
             Verify Session
     
 """
 
-# Verify Function
+# Verify session function
 def Verify_Session(window):
+
+    # Title lable
+    title = tk.Label(window, text="Welcome to Bulk Mailer!\n\nVerfication Session", font=("Arial", 14, "bold"))
+    title.pack(padx=10, pady=10)
     
-    text = tk.Label(window, text="Verify your sender gmail authentication configuration")
+    text = tk.Label(window, text="Please, verify your sender gmail authentication configuration. If you don't know please checkout the project documention for setup!\nDocumentation link: https://github.com/RishiAravind2004/Bulk-Mailer")
     text.pack(padx=10, pady=10)
     
     VerifyBtn = tk.Button(window, text="Verify", command=CheckSenderConfig)
@@ -49,9 +58,9 @@ def CheckSenderConfig():
 
 # Function for checking sender credentials are valid
 def ValidateSenderMail(sender_mail_id, app_password):
+    global server
+    
     try:
-        global server
-        
         # Trying to login into smtp server with email and app password
         server = smtplib.SMTP('smtp.gmail.com', 587)
         
@@ -63,16 +72,14 @@ def ValidateSenderMail(sender_mail_id, app_password):
         messagebox.showinfo("Information", "Credentials Validated!")
         print("Sender's Gmail credentials have been validated!")
 
-        # if validated means moving to futher process
-        Selecting_file_sesssion()
+        # If validated, move to further process
+        Selecting_file_session()
         
     except Exception as e:
-        
         # Can't log in to the SMTP server
         print("Sender's Gmail credentials are not valid!")
         print(e)
         messagebox.showerror("Error", "Please check the sender mail credentials in the configuration file.")
-
 
 """
 
@@ -80,46 +87,56 @@ def ValidateSenderMail(sender_mail_id, app_password):
     
 """
 
-# Function for selecting excel file(Recipient File) and format for of mail sending to Recipients
-def Selecting_file_sesssion():
+# Selecting file & processing session
+def Selecting_file_session():
+    global selected_file_label
+
+    # Purge current widget
+    destroy_current_session_content(window)
+
+    window.geometry('800x300')
+
+    # Title lable
+    title = tk.Label(window, text="File Selecting Session", font=("Arial", 14, "bold"))
+    title.pack(padx=10, pady=10)
     
-        # Purge current widget
-        destroy_current_session_content(window)
+    text = tk.Label(window, text="Select your excel file for Recipient datas and Email format for sending mails")
+    text.pack(padx=10, pady=10)
 
-        window.geometry('800x300')
+    selected_file_label = tk.Label(window, text="No file selected")
+    selected_file_label.pack(padx=10, pady=10)
 
-        text = tk.Label(window, text="Select your excel file")
-        text.pack(padx=10, pady=10)
-        
-        global selected_file_label
-        selected_file_label = tk.Label(window, text="No file selected")
-        selected_file_label.pack(padx=10, pady=10)
-        
-        open_button = tk.Button(window, text="Open Excel File", command=open_file_dialog)
-        open_button.pack(padx=10, pady=10)
+    open_button = tk.Button(window, text="Open Excel File", command=open_file_dialog)
+    open_button.pack(padx=10, pady=10)
 
-# Function to open file dialog and select Excel file
+    ProcessBtn = tk.Button(window, text="Process File", command=lambda: process_selected_file() if current_file_path else messagebox.showerror("Error", "Select a file before processing."))
+    ProcessBtn.pack(padx=10, pady=10)
+
+# dialog box for choosing excel file
 def open_file_dialog():
-    excel_file_path = filedialog.askopenfilename(title="Select an Excel File", filetypes=[("Excel files", "*.xlsx;*.xls"), ("All files", "*.*")])
-    if excel_file_path:
-        global current_file_path
-        current_file_path = excel_file_path
-        selected_file_label.config(text=f"Selected File: {excel_file_path}")
+    global current_file_path
 
-        ProcessBtn = tk.Button(window, text="Process File", command=lambda: check_for_mail_format(excel_file_path))
-        ProcessBtn.pack(padx=10, pady=10)
+    # get current selected excel file path
+    current_file_path = filedialog.askopenfilename(title="Select an Excel File", filetypes=[("Excel files", "*.xlsx;*.xls"), ("All files", "*.*")])
+    
+    if current_file_path:
+        selected_file_label.config(text=f"Selected File: {current_file_path}")
 
+# just processing
+def process_selected_file():
+    try:
+        check_for_mail_format(current_file_path)
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred: {e}")
 
+# checking for mail format file
 def check_for_mail_format(excel_file_path):
     try:
-        # Open the file and read all lines
         with open('Data/Mail-format.txt', 'r') as file:
-            mail_format_lines = file.readlines()  # Read all lines into a list
+            mail_format_lines = file.readlines()
 
-        # Check if the file has more than three lines
-        if len(mail_format_lines) > 3:
-            # processing the file for display
-            process_file(excel_file_path)  # Pass lines as a list
+        if len(mail_format_lines) > 3: # checking the mail format lines is above 3
+            process_file(excel_file_path) # processing the file
         else:
             print("Error: The Mail format file has 3 or fewer lines.")
             messagebox.showerror("Error", "The Mail format file has 3 or fewer lines.")
@@ -130,18 +147,20 @@ def check_for_mail_format(excel_file_path):
         print(f"Error: An error occurred: {e}.")
         messagebox.showerror("Error", f"An error occurred: {e}.")
 
-
-
-# Function to process the selected Excel file for displaying
+# processing the and check the excel file is valid and "Email" column is exist
 def process_file(file_path):
     global df
     try:
-        df = pd.read_excel(file_path)
-
-        # Moving for next session 
-        Display_Session(df)
+        df = pd.read_excel(file_path) # excel file into DataFrames
+        if 'Email' not in df.columns: # checking wheather the dataframe having "Email" column, coz using this only we going to send mails
+            messagebox.showerror("Error", "No 'Email' column found in the Excel file.")
+        else:
+            Display_Session(df) # moving to display the excel file content
+    except FileNotFoundError:
+        selected_file_label.config(text="Error: The selected Excel file does not exist.")
     except Exception as e:
         selected_file_label.config(text=f"Error: {str(e)}")
+
 
 """
 
@@ -149,15 +168,24 @@ def process_file(file_path):
     
 """
 
+# Display Session function
 def Display_Session(df):
+    # adjust the window root size
     window.geometry('800x600')
     
     global treeview, save_status_label
+    
     destroy_current_session_content(window)
 
-    title = tk.Label(window, text="Recipient File Datas:")
+    # Title lable
+    title = tk.Label(window, text="Recipient File Datas", font=("Arial", 14, "bold"))
     title.pack(padx=10, pady=10)
 
+    # Notes
+    Notes = tk.Label(window, text="Notes: You may can edit here itself and make your changes saves maded!")
+    Notes.pack(padx=10, pady=10)
+
+    # Display excel file content
     display_table(df)
 
     # Label to display save status
@@ -176,6 +204,7 @@ def Display_Session(df):
 
 # Function to display DataFrame as a table in tkinter
 def display_table(df):
+    global treeview
     
     # Create Treeview widget for displaying table
     treeview = EditableTreeview(window, show='headings')
@@ -193,7 +222,6 @@ def display_table(df):
 
     # Limit the number of rows displayed in the table view
     treeview.config(height=min(20, len(df)))
-
 
 # Function for editing cell in tree view
 class EditableTreeview(ttk.Treeview):
@@ -234,7 +262,6 @@ class EditableTreeview(ttk.Treeview):
         else:
             df.iloc[int(row), col_index] = value
 
-
 # Function to save the DataFrame to the Excel file
 def save_file():
     global save_status_label
@@ -249,14 +276,23 @@ def save_file():
 
 # --------------------------------------------------------------------------- #
 
+
+# Second part of display session
 def Display_Session_2():
-
-    global server
-
+    
     destroy_current_session_content(window)
 
     global save_status_label, Mail_Format
 
+    # Title
+    title = tk.Label(window, text="Email Format", font=("Arial", 14, "bold"))
+    title.pack(padx=10, pady=10)
+
+    # Notes
+    Notes = tk.Label(window, text="Notes: You may can edit here itself and make your changes saves maded!")
+    Notes.pack(padx=10, pady=10)
+    
+    # Display the format of email
     display_mail_format()
 
     # Label to display save status
@@ -271,9 +307,10 @@ def Display_Session_2():
     nextBtn = tk.Button(window, text="Back",  command= lambda: process_file(current_file_path))
     nextBtn.pack(padx=10, pady=10)
 
-    # Button to previous display session
+    # Button to send mails session
     SendMailsBtn = tk.Button(window, text="Send Mails",  command= lambda: Send_Mails(server, get_subject(), df, Mail_Format))
     SendMailsBtn.pack(padx=10, pady=10)
+
 # --------------------------------------------------------------------------- #
 
 # Function to display text file content in a Text widget in tkinter
@@ -283,16 +320,10 @@ def display_mail_format():
     with open('Data/Mail-format.txt', 'r') as file:
             mail_format_content = file.read()
             Mail_Format = mail_format_content
-
-    title = tk.Label(window, text="Text File Content:")
-    title.pack(padx=10, pady=10)
     
     text_widget = tk.Text(window, wrap='word', width=100, height=25)
     text_widget.pack(padx=20, pady=20)
     text_widget.insert("1.0", mail_format_content)
-
-
-
 
 # Function to save the edited text content to the Text file
 def save_text_file():
@@ -308,30 +339,36 @@ def save_text_file():
         save_status_label.config(text="No file selected to save.")
 
 # --------------------------------------------------------------------------- #
+
 """
 
             Function for operations
     
 """
+
 # Function to destroy current contents on window
 def destroy_current_session_content(window):
     for widget in window.winfo_children():
         widget.destroy()
-    return
 
-
+# Pop-up for getting subject for email
 def get_subject():
     root = tk.Tk()
-    root.withdraw()  # Hide the root window
+    root.withdraw()
     subject = simpledialog.askstring("Email Subject", "Please enter the subject of the email:")
-    root.destroy()  # Close the root window
+    root.destroy()
     return subject
+
+"""
+
+            Starting of program
+    
+"""
 
 # Starts
 if __name__ == "__main__":
-    window = tk.Tk() # Initialize tkinter window
-    window.geometry('400x100')
+    window = tk.Tk()
+    window.geometry('800x200')
     window.title("Bulk Mailer")
     Verify_Session(window)
     window.mainloop()
-

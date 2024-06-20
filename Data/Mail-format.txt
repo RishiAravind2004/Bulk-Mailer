@@ -1,8 +1,12 @@
-hi this is an test mail
-Email {Email}	
-Name: {Name}	
-Work: {Work}	
-Role: {Role_Of_User}	
-Salary: {Salary}
+			CopyCat Development
 
+Dear {Name},
 
+This is to inform you that your role as a {Role} at {Work_Place} has been confirmed.
+Your salary details:
+- Salary: {Salary}
+
+Please let us know if you have any questions.
+
+Best regards,
+CopyCat Developers.
