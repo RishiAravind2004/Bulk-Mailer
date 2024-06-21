@@ -26,7 +26,6 @@ json
   "App-password": "XXXX XXXX XXXX XXXX",
   "Sender-mail-id": "xxxxxxxxxxxxxxxxxxxxx@gmail.com"
 }
-
 ```
 
 Please replace "App-password" with your actual Google app password and "Sender-mail-id" with your sender gmail address.
