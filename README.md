@@ -70,7 +70,7 @@ These attributes are going to used to reference the concurrent value of respecti
 
 This file contains the mail format represented with attributes.
 
-For example, assuming you have attributes like "Email", "Name", "Work_Place" (cleaned as "Work Place"), "Role", and "Salary", 
+For example, assuming you have attributes like "Email", "Name", "Work Place" (cleaned as "Work_Place"), "Role", and "Salary", 
 Create a template of the email in a text file. Use curly braces ({}) on both sides of the attribute name like {attribute} to represent the attribute values.
 
 ```
