@@ -141,4 +141,3 @@ To save the logs after sending all mails, click the "Save Logs" button. This act
 ![alt text](images/image-9.png)
 
 **-Happy Mailing😺!**
->>>>>>> bf229f9 (Updated ReadMe)
