@@ -379,5 +379,8 @@ if __name__ == "__main__":
     window = tk.Tk()
     window.geometry('800x200')
     window.title("Bulk Mailer")
+    img = PhotoImage(file='images/Logo.png')
+    window.iconphoto(True, img)
+    window.iconbitmap('images/Logo.ico')
     Verify_Session(window)
     window.mainloop()
